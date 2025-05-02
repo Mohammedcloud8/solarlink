@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolarLink&reg;</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom, #fdf6e3, #ffe680);
+      color: #333;
+    }
+    .page {
+      display: none;
+      padding: 20px;
+    }
+    .active {
+      display: block;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+      margin-top: 30px;
+    }
+    .centered {
+      text-align: center;
+      margin: 20px auto;
+    }
+    button {
+      background-color: #f9a825;
+      border: none;
+      color: white;
+      padding: 15px 30px;
+      text-align: center;
+      font-size: 1em;
+      cursor: pointer;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    input, select {
+      padding: 10px;
+      width: 100%;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #aaa;
+      text-align: center;
+      padding: 10px;
+    }
+    @keyframes scrollText {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .scrolling-text {
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100%;
+      margin: 10px auto;
+    }
+    .scrolling-text div {
+      display: inline-block;
+      animation: scrollText 10s linear infinite;
+      font-size: 1.2em;
+      color: #444;
+    }
+    #login {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #000;
+    }
+    .radar-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #00ff0077 1%, #004400 80%);
+      box-shadow: 0 0 20px #0f0;
+      overflow: hidden;
+    }
+    .radar-sweep {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: conic-gradient(rgba(0,255,0,0.2) 0deg, rgba(0,255,0,0.5) 60deg, transparent 60deg);
+      animation: sweep 3s linear infinite;
+    }
+    @keyframes sweep {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .login-form {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: white;
+    }
+    .login-form input {
+      width: 80%;
+      margin: 10px auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <audio id="welcomeAudio" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+  <div id="login" class="page active">
+    <div class="radar-container">
+      <div class="radar-sweep"></div>
+      <div class="login-form">
+        <h2>تسجيل الدخول إلى SolarLink</h2>
+        <input type="text" id="username" placeholder="اسم المستخدم">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <button onclick="checkLogin()">دخول</button>
+      </div>
+    </div>
+  </div>
+  <div id="welcome" class="page">
+    <h1>SolarLink&reg;</h1>
+    <div class="scrolling-text"><div>مرحباً عزيزي الزائر، أتمنى لك يوماً مشمساً</div></div>
+    <div class="centered">
+      <p>البرنامج يساعدك في حساب المكونات الأساسية لنظام الطاقة الشمسية</p>
+      <button onclick="navigateTo('calculator')">الانتقال إلى صفحة الحسابات</button>
+    </div>
+  </div>
+  <div id="calculator" class="page">
+    <h1>حسابات النظام الشمسي</h1>
+    <div>
+      <label>الاستهلاك اليومي (kWh): <input type="number" id="dailyUsage"></label>
+      <label>عدد ساعات الشمس الفعلية: <input type="number" id="sunHours"></label>
+      <label>قدرة اللوح الشمسي (Watt): <input type="number" id="panelPower"></label>
+      <label>جهد النظام: 
+        <select id="systemVoltage">
+          <option value="12">12V</option>
+          <option value="24">24V</option>
+          <option value="48">48V</option>
+        </select>
+      </label>
+      <label>كفاءة النظام: <input type="number" id="systemEfficiency" step="0.01"></label>
+      <label>عمق التفريغ DOD: <input type="number" id="dod" step="0.01"></label>
+      <label>معامل الأمان: <input type="number" id="safetyFactor" step="0.01"></label>
+      <label>سعة البطارية (Ah): <input type="number" id="batteryCapacity"></label>
+      <label>كفاءة البطارية: <input type="number" id="batteryEfficiency" step="0.01"></label>
+      <label>عدد أيام الاستقلال: <input type="number" id="autonomyDays" value="1"></label>
+      <button onclick="calculateSystem()">احسب المكونات</button>
+    </div>
+    <div id="results"></div>
+    <div class="centered">
+      <button onclick="generatePDF()">تحميل النتائج PDF</button>
+      <button onclick="navigateTo('summary')">الانتقال إلى صفحة الملخص</button>
+    </div>
+  </div>
+  <div id="summary" class="page">
+    <h1>ملخص الحسابات</h1>
+    <div id="summaryResults"></div>
+    <div class="centered">
+      <button onclick="navigateTo('welcome')">العودة إلى صفحة البداية</button>
+      <button onclick="navigateTo('calculator')">تعديل البيانات</button>
+    </div>
+  </div>
+  <script>
+    function navigateTo(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    }
+
+    function checkLogin() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      if (user === 'link' && pass === '2025') {
+        document.getElementById('welcomeAudio').play();
+        setTimeout(() => navigateTo('welcome'), 1000);
+      } else {
+        alert('اسم المستخدم أو كلمة المرور غير صحيحة');
+      }
+    }
+
+    let lastResults = {};
+
+    function calculateSystem() {
+      const dailyUsage = parseFloat(document.getElementById('dailyUsage').value);
+      const sunHours = parseFloat(document.getElementById('sunHours').value);
+      const panelPower = parseFloat(document.getElementById('panelPower').value);
+      const voltage = parseFloat(document.getElementById('systemVoltage').value);
+      const systemEfficiency = parseFloat(document.getElementById('systemEfficiency').value);
+      const dod = parseFloat(document.getElementById('dod').value);
+      const safetyFactor = parseFloat(document.getElementById('safetyFactor').value);
+      const batteryCapacity = parseFloat(document.getElementById('batteryCapacity').value);
+      const batteryEfficiency = parseFloat(document.getElementById('batteryEfficiency').value);
+      const autonomyDays = parseFloat(document.getElementById('autonomyDays').value);
+
+      const panelCount = Math.ceil((dailyUsage * 1000) / (panelPower * sunHours * systemEfficiency));
+      const batteryCount = Math.ceil((dailyUsage * autonomyDays * 1000) / (voltage * batteryCapacity * dod * batteryEfficiency));
+      const inverterSize = (dailyUsage * safetyFactor).toFixed(2);
+      const chargeControllerCurrent = ((panelPower * panelCount) / voltage * 1.25).toFixed(2);
+
+      lastResults = { panelCount, batteryCount, inverterSize, chargeControllerCurrent };
+
+      document.getElementById('results').innerHTML = `
+        <table>
+          <tr><th>المكون</th><th>القيمة</th></tr>
+          <tr><td>عدد الألواح المطلوبة</td><td>${panelCount}</td></tr>
+          <tr><td>عدد البطاريات المطلوبة</td><td>${batteryCount}</td></tr>
+          <tr><td>حجم الانفرتر المناسب (kW)</td><td>${inverterSize}</td></tr>
+          <tr><td>تيار منظم الشحن (A)</td><td>${chargeControllerCurrent}</td></tr>
+        </table>`;
+
+      document.getElementById('summaryResults').innerHTML = document.getElementById('results').innerHTML;
+    }
+
+    function generatePDF() {
+      alert("ميزة التصدير PDF ستحتاج إلى مكتبة خارجية لا يسمح بها حالياً، يمكنك نسخ النتائج يدويًا.");
+    }
+  </script>
+</body>
+</html>
